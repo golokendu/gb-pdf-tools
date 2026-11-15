@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GB PDF Tools – Free Online PDF Merge, Split & Converter</title>
+<meta name="description" content="Free PDF tools: merge PDFs, split PDFs, convert JPG to PDF and PDF to JPG. Files stay in your browser.">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:#f4f6fb;color:#1f2937}
+header{background:#1e40af;color:#fff;padding:20px 16px;text-align:center}
+header h1{margin:0;font-size:1.6rem}
+header p{margin:6px 0 0;opacity:.9;font-size:.95rem}
+nav{display:flex;flex-wrap:wrap;gap:8px;padding:12px;justify-content:center}
+nav button{flex:1 1 40%;padding:12px;border:0;border-radius:8px;background:#fff;font-size:1rem;cursor:pointer;box-shadow:0 1px 3px #0002}
+nav button.active{background:#2563eb;color:#fff}
+main{max-width:640px;margin:0 auto;padding:0 12px 40px}
+section{display:none;background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px #0002}
+section.active{display:block}
+h2{margin-top:0}
+input[type=file],input[type=text]{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;margin:8px 0;background:#fff}
+.go{width:100%;padding:14px;border:0;border-radius:8px;background:#16a34a;color:#fff;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.msg{margin-top:10px;font-size:.95rem;color:#475569}
+.links a{display:block;margin:6px 0;color:#2563eb}
+footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
+</style>
+</head>
+<body>
+<header>
+  <h1>GB PDF Tools</h1>
+  <p>Free PDF tools. Your files never leave your device.</p>
+</header>
+
+<nav>
+  <button class="active" data-t="merge">Merge PDF</button>
+  <button data-t="split">Split PDF</button>
+  <button data-t="j2p">JPG to PDF</button>
+  <button data-t="p2j">PDF to JPG</button>
+</nav>
+
+<main>
+  <section id="merge" class="active">
+    <h2>Merge PDFs</h2>
+    <p>Select two or more PDF files (in order).</p>
+    <input type="file" id="mergeFiles" accept="application/pdf" multiple>
+    <button class="go" id="mergeBtn">Merge &amp; Download</button>
+    <div class="msg" id="mergeMsg"></div>
+  </section>
+
+  <section id="split">
+    <h2>Split PDF</h2>
+    <p>Choose a PDF and the pages to extract, e.g. <b>1-3,5</b></p>
+    <input type="file" id="splitFile" accept="application/pdf">
+    <input type="text" id="splitRange" placeholder="Pages: 1-3,5">
+    <button class="go" id="splitBtn">Extract &amp; Download</button>
+    <div class="msg" id="splitMsg"></div>
+  </section>
+
+  <section id="j2p">
+    <h2>JPG to PDF</h2>
+    <p>Select one or more JPG/PNG images.</p>
+    <input type="file" id="imgFiles" accept="image/jpeg,image/png" multiple>
+    <button class="go" id="j2pBtn">Convert &amp; Download</button>
+    <div class="msg" id="j2pMsg"></div>
+  </section>
+
+  <section id="p2j">
+    <h2>PDF to JPG</h2>
+    <p>Each page becomes a JPG image.</p>
+    <input type="file" id="p2jFile" accept="application/pdf">
+    <button class="go" id="p2jBtn">Convert</button>
+    <div class="msg" id="p2jMsg"></div>
+    <div class="links" id="p2jLinks"></div>
+  </section>
+</main>
+
+<footer>&copy; 2026 GB PDF Tools</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const $=id=>document.getElementById(id);
+const {PDFDocument}=PDFLib;
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button,section").forEach(e=>e.classList.remove("active"));
+  b.classList.add("active");$(b.dataset.t).classList.add("active");
+});
+
+function dl(blob,name){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+}
+const buf=f=>f.arrayBuffer();
+
+$("mergeBtn").onclick=async()=>{
+  const files=$("mergeFiles").files,m=$("mergeMsg");
+  if(files.length<2){m.textContent="Please select at least 2 PDFs.";return;}
+  try{
+    m.textContent="Working...";
+    const out=await PDFDocument.create();
+    for(const f of files){
+      const src=await PDFDocument.load(await buf(f));
+      const pages=await out.copyPages(src,src.getPageIndices());
+      pages.forEach(p=>out.addPage(p));
+    }
+    dl(new Blob([await out.save()],{type:"application/pdf"}),"merged.pdf");
+    m.textContent="Done! Download started.";
+  }catch(e){m.textContent="Error: "+e.message;}
+};
+
+function parseRange(s,max){
+  const set=new Set();
+  s.split(",").forEach(part=>{
+    part=part.trim();if(!part)return;
+    const [a,b]=part.split("-").map(Number);
+    const end=b||a;
+    for(let i=a;i<=end;i++)if(i>=1&&i<=max)set.add(i-1);
+  });
+  return [...set].sort((x,y)=>x-y);
+}
+
+$("splitBtn").onclick=async()=>{
+  const f=$("splitFile").files[0],m=$("splitMsg");
+  if(!f){m.textContent="Please select a PDF.";return;}
+  try{
+    m.textContent="Working...";
+    const src=await PDFDocument.load(await buf(f));
+    const idx=parseRange($("splitRange").value,src.getPageCount());
+    if(!idx.length){m.textContent="Enter valid pages (total: "+src.getPageCount()+").";return;}
+    const out=await PDFDocument.create();
+    (await out.copyPages(src,idx)).forEach(p=>out.addPage(p));
+    dl(new Blob([await out.save()],{type:"application/pdf"}),"split.pdf");
+    m.textContent="Done! Download started.";
+  }catch(e){m.textContent="Error: "+e.message;}
+};
+
+$("j2pBtn").onclick=async()=>{
+  const files=$("imgFiles").files,m=$("j2pMsg");
+  if(!files.length){m.textContent="Please select images.";return;}
+  try{
+    m.textContent="Working...";
+    const out=await PDFDocument.create();
+    for(const f of files){
+      const bytes=await buf(f);
+      const img=f.type==="image/png"?await out.embedPng(bytes):await out.embedJpg(bytes);
+      const page=out.addPage([img.width,img.height]);
+      page.drawImage(img,{x:0,y:0,width:img.width,height:img.height});
+    }
+    dl(new Blob([await out.save()],{type:"application/pdf"}),"images.pdf");
+    m.textContent="Done! Download started.";
+  }catch(e){m.textContent="Error: "+e.message;}
+};
+
+$("p2jBtn").onclick=async()=>{
+  const f=$("p2jFile").files[0],m=$("p2jMsg"),box=$("p2jLinks");
+  box.innerHTML="";
+  if(!f){m.textContent="Please select a PDF.";return;}
+  try{
+    m.textContent="Working...";
+    const pdf=await pdfjsLib.getDocument({data:await buf(f)}).promise;
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const vp=page.getViewport({scale:2});
+      const c=document.createElement("canvas");
+      c.width=vp.width;c.height=vp.height;
+      await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+      const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.92));
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);a.download="page-"+i+".jpg";
+      a.textContent="Download page "+i+" (JPG)";
+      box.appendChild(a);
+    }
+    m.textContent="Done! Tap each link to download.";
+  }catch(e){m.textContent="Error: "+e.message;}
+};
+</script>
+</body>
+</html>
