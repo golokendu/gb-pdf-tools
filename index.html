@@ -5,7 +5,7 @@
 <meta name="google-site-verification" content="d9pMFjO8_05YBOQa_dfCAg3ofQl0Ofw5f4jxKzOqHSI" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GB PDF Tools – Free Online PDF Merge, Split & Converter</title>
-<meta name="description" content="Free PDF tools: merge PDFs, split PDFs, convert JPG to PDF and PDF to JPG. Files stay in your browser.">
+<meta name="description" content="Free PDF tools: merge PDFs, split PDFs, convert JPG to PDF, PDF to JPG and Word to PDF. Files stay in your browser.">
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,Arial,sans-serif;background:#f4f6fb;color:#1f2937}
@@ -24,6 +24,10 @@ input[type=file],input[type=text]{width:100%;padding:12px;border:1px solid #cbd5
 .msg{margin-top:10px;font-size:.95rem;color:#475569}
 .links a{display:block;margin:6px 0;color:#2563eb}
 footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
+#docRender{position:fixed;top:0;left:0;z-index:-1;width:794px;padding:40px;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:14px;line-height:1.5}
+#docRender img{max-width:100%}
+#docRender table{border-collapse:collapse;width:100%}
+#docRender td,#docRender th{border:1px solid #666;padding:4px}
 </style>
 </head>
 <body>
@@ -37,6 +41,7 @@ footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
   <button data-t="split">Split PDF</button>
   <button data-t="j2p">JPG to PDF</button>
   <button data-t="p2j">PDF to JPG</button>
+  <button data-t="w2p">Word to PDF</button>
 </nav>
 
 <main>
@@ -73,12 +78,24 @@ footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
     <div class="msg" id="p2jMsg"></div>
     <div class="links" id="p2jLinks"></div>
   </section>
+
+  <section id="w2p">
+    <h2>Word to PDF</h2>
+    <p>Select a Word file (.docx). Text, tables and images are kept; complex layouts may look slightly different.</p>
+    <input type="file" id="docFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+    <button class="go" id="w2pBtn">Convert &amp; Download</button>
+    <div class="msg" id="w2pMsg"></div>
+  </section>
 </main>
+
+<div id="docRender"></div>
 
 <footer>&copy; 2026 GB PDF Tools</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const $=id=>document.getElementById(id);
@@ -175,6 +192,26 @@ $("p2jBtn").onclick=async()=>{
       box.appendChild(a);
     }
     m.textContent="Done! Tap each link to download.";
+  }catch(e){m.textContent="Error: "+e.message;}
+};
+
+$("w2pBtn").onclick=async()=>{
+  const f=$("docFile").files[0],m=$("w2pMsg"),box=$("docRender");
+  if(!f){m.textContent="Please select a .docx file.";return;}
+  if(!f.name.toLowerCase().endsWith(".docx")){m.textContent="Only .docx files are supported. Open old .doc files in Word and save as .docx first.";return;}
+  try{
+    m.textContent="Working...";
+    const res=await mammoth.convertToHtml({arrayBuffer:await buf(f)});
+    box.innerHTML=res.value;
+    await html2pdf().set({
+      margin:10,
+      filename:f.name.replace(/\.docx$/i,"")+".pdf",
+      image:{type:"jpeg",quality:0.95},
+      html2canvas:{scale:2,useCORS:true},
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
+    }).from(box).save();
+    box.innerHTML="";
+    m.textContent="Done! Download started.";
   }catch(e){m.textContent="Error: "+e.message;}
 };
 </script>
