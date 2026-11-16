@@ -24,10 +24,16 @@ input[type=file],input[type=text]{width:100%;padding:12px;border:1px solid #cbd5
 .msg{margin-top:10px;font-size:.95rem;color:#475569}
 .links a{display:block;margin:6px 0;color:#2563eb}
 footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
-#docRender{display:none;position:absolute;top:0;left:0;z-index:99999;width:794px;padding:40px;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:14px;line-height:1.5}
-#docRender img{max-width:100%}
-#docRender table{border-collapse:collapse;width:100%}
-#docRender td,#docRender th{border:1px solid #666;padding:4px}
+footer a{color:#2563eb}
+#docRender{display:none}
+@media print{
+  header,nav,main,footer{display:none!important}
+  body{background:#fff}
+  #docRender{display:block!important;color:#000;font-family:Arial,sans-serif;font-size:12pt;line-height:1.5}
+  #docRender img{max-width:100%}
+  #docRender table{border-collapse:collapse;width:100%}
+  #docRender td,#docRender th{border:1px solid #666;padding:4px}
+}
 </style>
 </head>
 <body>
@@ -81,21 +87,20 @@ footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
 
   <section id="w2p">
     <h2>Word to PDF</h2>
-    <p>Select a Word file (.docx). Text, tables and images are kept; complex layouts may look slightly different. The page may flash for a moment while converting.</p>
+    <p>Select a Word file (.docx). Tap Convert, then in the print screen choose <b>Save as PDF</b> as the destination and tap the PDF button.</p>
     <input type="file" id="docFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-    <button class="go" id="w2pBtn">Convert &amp; Download</button>
+    <button class="go" id="w2pBtn">Convert to PDF</button>
     <div class="msg" id="w2pMsg"></div>
   </section>
 </main>
 
 <div id="docRender"></div>
 
-<footer>&copy; 2026 GB PDF Tools</footer>
+<footer>&copy; 2026 GB PDF Tools &middot; <a href="/privacy.html">Privacy Policy</a></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const $=id=>document.getElementById(id);
@@ -204,19 +209,11 @@ $("w2pBtn").onclick=async()=>{
     const res=await mammoth.convertToHtml({arrayBuffer:await buf(f)});
     if(!res.value||!res.value.trim()){m.textContent="This document appears to be empty or unreadable.";return;}
     box.innerHTML=res.value;
-    box.style.display="block";
-    window.scrollTo(0,0);
-    await new Promise(r=>setTimeout(r,500));
-    await html2pdf().set({
-      margin:10,
-      filename:f.name.replace(/\.docx$/i,"")+".pdf",
-      image:{type:"jpeg",quality:0.95},
-      html2canvas:{scale:2,useCORS:true,scrollX:0,scrollY:0,windowWidth:850},
-      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
-    }).from(box).save();
-    m.textContent="Done! Download started.";
+    document.title=f.name.replace(/\.docx$/i,"");
+    m.textContent="Print screen opening. Choose 'Save as PDF' as the destination.";
+    await new Promise(r=>setTimeout(r,300));
+    window.print();
   }catch(e){m.textContent="Error: "+e.message;}
-  finally{box.style.display="none";box.innerHTML="";}
 };
 </script>
 </body>
