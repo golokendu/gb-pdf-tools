@@ -24,7 +24,7 @@ input[type=file],input[type=text]{width:100%;padding:12px;border:1px solid #cbd5
 .msg{margin-top:10px;font-size:.95rem;color:#475569}
 .links a{display:block;margin:6px 0;color:#2563eb}
 footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
-#docRender{position:fixed;top:0;left:0;z-index:-1;width:794px;padding:40px;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:14px;line-height:1.5}
+#docRender{display:none;position:absolute;top:0;left:0;z-index:99999;width:794px;padding:40px;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:14px;line-height:1.5}
 #docRender img{max-width:100%}
 #docRender table{border-collapse:collapse;width:100%}
 #docRender td,#docRender th{border:1px solid #666;padding:4px}
@@ -81,7 +81,7 @@ footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
 
   <section id="w2p">
     <h2>Word to PDF</h2>
-    <p>Select a Word file (.docx). Text, tables and images are kept; complex layouts may look slightly different.</p>
+    <p>Select a Word file (.docx). Text, tables and images are kept; complex layouts may look slightly different. The page may flash for a moment while converting.</p>
     <input type="file" id="docFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
     <button class="go" id="w2pBtn">Convert &amp; Download</button>
     <div class="msg" id="w2pMsg"></div>
@@ -202,17 +202,21 @@ $("w2pBtn").onclick=async()=>{
   try{
     m.textContent="Working...";
     const res=await mammoth.convertToHtml({arrayBuffer:await buf(f)});
+    if(!res.value||!res.value.trim()){m.textContent="This document appears to be empty or unreadable.";return;}
     box.innerHTML=res.value;
+    box.style.display="block";
+    window.scrollTo(0,0);
+    await new Promise(r=>setTimeout(r,500));
     await html2pdf().set({
       margin:10,
       filename:f.name.replace(/\.docx$/i,"")+".pdf",
       image:{type:"jpeg",quality:0.95},
-      html2canvas:{scale:2,useCORS:true},
+      html2canvas:{scale:2,useCORS:true,scrollX:0,scrollY:0,windowWidth:850},
       jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
     }).from(box).save();
-    box.innerHTML="";
     m.textContent="Done! Download started.";
   }catch(e){m.textContent="Error: "+e.message;}
+  finally{box.style.display="none";box.innerHTML="";}
 };
 </script>
 </body>
