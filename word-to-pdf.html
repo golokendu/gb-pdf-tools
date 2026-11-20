@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word to PDF Converter Free – DOCX to PDF | GB PDF Tools</title>
+<meta name="description" content="Convert Word (.docx) files to PDF online for free. Runs in your browser. No upload, no sign-up, no watermark.">
+<style>
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:#f4f6fb;color:#1f2937;line-height:1.6}
+header{background:#1e40af;color:#fff;padding:16px;text-align:center}
+header a{color:#fff;text-decoration:none;font-size:1.3rem;font-weight:bold}
+main{max-width:720px;margin:16px auto;padding:0 12px}
+.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px #0002;margin-bottom:16px}
+h1{margin-top:0}
+a{color:#2563eb}
+input[type=file]{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;margin:8px 0;background:#fff}
+.go{width:100%;padding:14px;border:0;border-radius:8px;background:#16a34a;color:#fff;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.msg{margin-top:10px;color:#475569}
+.tools a{display:inline-block;margin:4px 8px 4px 0}
+footer{text-align:center;padding:20px;font-size:.85rem;color:#64748b}
+#docRender{display:none}
+@media print{
+  header,main,footer{display:none!important}
+  body{background:#fff}
+  #docRender{display:block!important;color:#000;font-family:Arial,sans-serif;font-size:12pt;line-height:1.5}
+  #docRender img{max-width:100%}
+  #docRender table{border-collapse:collapse;width:100%}
+  #docRender td,#docRender th{border:1px solid #666;padding:4px}
+}
+</style>
+</head>
+<body>
+<header><a href="/">GB PDF Tools</a></header>
+<main>
+<div class="card">
+<h1>Word to PDF</h1>
+<p>Convert a Word (.docx) file to PDF. After tapping Convert, choose <b>Save as PDF</b> in the print screen.</p>
+<input type="file" id="docFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+<button class="go" id="w2pBtn">Convert to PDF</button>
+<div class="msg" id="w2pMsg"></div>
+</div>
+
+<div class="card">
+<h2>How to convert Word to PDF</h2>
+<ol>
+<li>Tap <b>Choose file</b> and select a .docx file.</li>
+<li>Tap <b>Convert to PDF</b>. The print screen opens.</li>
+<li>Set the destination to <b>Save as PDF</b> and tap the PDF button.</li>
+</ol>
+<p>Text, tables and images are kept. Very complex layouts may look slightly different, so check the result before sharing.</p>
+</div>
+
+<div class="card">
+<h2>Questions</h2>
+<p><b>Is it free?</b><br>Yes, with no sign-up and no watermark.</p>
+<p><b>Is my document uploaded?</b><br>No. Conversion happens in your browser, so your file stays on your device.</p>
+<p><b>Does it work with old .doc files?</b><br>No. Open the file in Word and save it as .docx first.</p>
+</div>
+
+<div class="card tools">
+<h2>More tools</h2>
+<a href="/">All tools</a>
+<a href="/merge-pdf.html">Merge PDF</a>
+<a href="/split-pdf.html">Split PDF</a>
+<a href="/jpg-to-pdf.html">JPG to PDF</a>
+<a href="/pdf-to-jpg.html">PDF to JPG</a>
+<a href="/about.html">About</a>
+<a href="/contact.html">Contact</a>
+<a href="/privacy.html">Privacy Policy</a>
+</div>
+</main>
+<div id="docRender"></div>
+<footer>&copy; 2026 GB PDF Tools</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="/tools.js"></script>
+</body>
+</html>
